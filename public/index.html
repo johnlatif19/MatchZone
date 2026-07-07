@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchZone - نظام إدارة البطولات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Tajawal', 'Arial', sans-serif;
+            background: #0a0e1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e1a 100%);
+            padding: 20px 40px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+        
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD700, #FF6B00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #FFD700;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #FFD700, #FF6B00);
+            color: #fff !important;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a1f3a 50%, #0a0e1a 100%);
+            padding: 80px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #FFD700, #FF6B00, #FF1493);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #aaa;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        
+        /* Tournaments */
+        .section {
+            padding: 60px 40px;
+        }
+        
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .section-title span {
+            background: linear-gradient(135deg, #FFD700, #FF6B00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .tournaments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .tournament-card {
+            background: linear-gradient(145deg, rgba(26, 31, 58, 0.9), rgba(10, 14, 26, 0.9));
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tournament-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.1);
+        }
+        
+        .tournament-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+        
+        .tournament-card h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        
+        .tournament-card .stage {
+            color: #FFD700;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .tournament-card .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-upcoming { background: #2196F3; }
+        .status-live { background: #f44336; animation: pulse 1.5s infinite; }
+        .status-finished { background: #4CAF50; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Matches */
+        .matches-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .match-card {
+            background: linear-gradient(145deg, rgba(26, 31, 58, 0.9), rgba(10, 14, 26, 0.9));
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        
+        .match-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .match-teams {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .team {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .team img {
+            width: 30px;
+            height: 20px;
+            object-fit: cover;
+        }
+        
+        .match-score {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFD700;
+            padding: 0 20px;
+        }
+        
+        .match-info {
+            text-align: right;
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .match-status {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(26, 31, 58, 0.9), rgba(10, 14, 26, 0.9));
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.05);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        
+        .stat-label {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #0a0e1a;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        
+        .footer p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .match-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .match-teams {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .tournaments-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="https://i.postimg.cc/yx0V5d76/Match-Zone.png" alt="MatchZone Logo">
+            <h1>MatchZone</h1>
+        </div>
+        <nav class="nav-links">
+            <a href="#tournaments">البطولات</a>
+            <a href="#matches">المباريات</a>
+            <a href="#stats">الإحصائيات</a>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🏆 منصة البطولات الرياضية</h1>
+            <p>تابع جميع البطولات والمباريات والنتائج لحظة بلحظة مع MatchZone</p>
+        </div>
+    </section>
+
+    <!-- Tournaments -->
+    <section id="tournaments" class="section">
+        <h2 class="section-title">🏟️ <span>البطولات الحالية</span></h2>
+        <div id="tournamentsList" class="tournaments-grid">
+            <div class="loading">جاري التحميل...</div>
+        </div>
+    </section>
+
+    <!-- Matches -->
+    <section id="matches" class="section" style="background: rgba(255, 215, 0, 0.02);">
+        <h2 class="section-title">⚽ <span>المباريات القادمة</span></h2>
+        <div id="matchesList" class="matches-container">
+            <div class="loading">جاري التحميل...</div>
+        </div>
+    </section>
+
+    <!-- Statistics -->
+    <section id="stats" class="section">
+        <h2 class="section-title">📊 <span>إحصائيات البطولات</span></h2>
+        <div id="statsGrid" class="stats-grid">
+            <div class="loading">جاري التحميل...</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 MatchZone. جميع الحقوق محفوظة</p>
+    </footer>
+
+    <script>
+        // ==================== LOAD TOURNAMENTS FROM API ====================
+        async function loadTournaments() {
+            try {
+                const response = await fetch('/api/tournaments');
+                const data = await response.json();
+                
+                const container = document.getElementById('tournamentsList');
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#666;">لا توجد بطولات حالياً</p>';
+                    return;
+                }
+                
+                let html = '';
+                data.forEach(t => {
+                    const statusClass = t.status === 'live' ? 'status-live' : 
+                                       t.status === 'finished' ? 'status-finished' : 'status-upcoming';
+                    const statusText = t.status === 'live' ? 'مباشر' : t.status === 'finished' ? 'منتهية' : 'قادمة';
+                    html += `
+                        <div class="tournament-card">
+                            ${t.logo ? `<img src="${t.logo}" alt="${t.name}" class="tournament-logo">` : ''}
+                            <h3>${t.name || 'بطولة'}</h3>
+                            <div class="stage">${t.currentStage || 'مرحلة المجموعات'}</div>
+                            <span class="status ${statusClass}">${statusText}</span>
+                            ${t.season ? `<p style="color:#888;font-size:14px;margin-top:10px;">الموسم: ${t.season}</p>` : ''}
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading tournaments:', error);
+                document.getElementById('tournamentsList').innerHTML = 
+                    '<p style="text-align:center;color:#f44336;">حدث خطأ في تحميل البطولات</p>';
+            }
+        }
+
+        // ==================== LOAD MATCHES FROM API ====================
+        async function loadMatches() {
+            try {
+                const response = await fetch('/api/matches');
+                const data = await response.json();
+                
+                const container = document.getElementById('matchesList');
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#666;">لا توجد مباريات</p>';
+                    return;
+                }
+                
+                // Filter upcoming matches
+                const upcoming = data.filter(m => m.status === 'upcoming' || m.status === 'live').slice(0, 5);
+                if (upcoming.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#666;">لا توجد مباريات قادمة</p>';
+                    return;
+                }
+                
+                let html = '';
+                upcoming.forEach(m => {
+                    const statusText = m.status === 'live' ? '🟢 مباشر' : '⏳ قادمة';
+                    const scoreDisplay = m.status === 'finished' || m.status === 'live' ?
+                        `${m.homeScore || 0} - ${m.awayScore || 0}` : 'vs';
+                    
+                    html += `
+                        <div class="match-card">
+                            <div class="match-teams">
+                                <div class="team">
+                                    <span>${m.homeTeam || 'فريق'}</span>
+                                </div>
+                                <div class="match-score">${scoreDisplay}</div>
+                                <div class="team">
+                                    <span>${m.awayTeam || 'فريق'}</span>
+                                </div>
+                            </div>
+                            <div class="match-info">
+                                <div>${m.date ? new Date(m.date).toLocaleDateString('ar') : ''}</div>
+                                <span class="match-status" style="background:${m.status === 'live' ? '#f44336' : '#2196F3'}">${statusText}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading matches:', error);
+                document.getElementById('matchesList').innerHTML = 
+                    '<p style="text-align:center;color:#f44336;">حدث خطأ في تحميل المباريات</p>';
+            }
+        }
+
+        // ==================== LOAD STATISTICS FROM API ====================
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                const container = document.getElementById('statsGrid');
+                container.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.totalMatches || 0}</div>
+                        <div class="stat-label">إجمالي المباريات</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.completedMatches || 0}</div>
+                        <div class="stat-label">مباريات منتهية</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.upcomingMatches || 0}</div>
+                        <div class="stat-label">مباريات قادمة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.totalGoals || 0}</div>
+                        <div class="stat-label">إجمالي الأهداف</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                document.getElementById('statsGrid').innerHTML = 
+                    '<p style="text-align:center;color:#f44336;">حدث خطأ في تحميل الإحصائيات</p>';
+            }
+        }
+
+        // ==================== INITIAL LOAD ====================
+        loadTournaments();
+        loadMatches();
+        loadStatistics();
+
+        // ==================== REFRESH EVERY 30 SECONDS ====================
+        setInterval(() => {
+            loadTournaments();
+            loadMatches();
+            loadStatistics();
+        }, 30000);
+    </script>
+</body>
+</html>
